@@ -9,7 +9,7 @@
 
 import os
 import sys
-from datetime import datetime
+from datetime import datetime, timezone
 
 print("=" * 50)
 print("Testing database.py + models.py")
@@ -24,6 +24,13 @@ except ImportError as e:
     print(f"\n[FAIL] Import error: {e}")
     print("Make sure you ran:  pip install sqlalchemy")
     sys.exit(1)
+
+# ── 1b. Pre-test cleanup ─────────────────────────────────────
+# Delete any leftover database from a previous failed run so
+# UNIQUE constraints don't fire on re-runs.
+if os.path.exists(DATABASE_PATH):
+    os.remove(DATABASE_PATH)
+    print("[OK] Removed leftover database from previous run")
 
 # ── 2. Create tables ────────────────────────────────────────
 try:
@@ -94,7 +101,7 @@ try:
     # ── 8. Create a test study stat ─────────────────────────
     stat = StudyStat(
         user_id=user.id,
-        study_date=datetime.now(datetime.UTC),
+        study_date=datetime.now(timezone.utc),
         cards_reviewed=10,
         cards_correct=8,
         docs_uploaded=1,

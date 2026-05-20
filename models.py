@@ -15,7 +15,7 @@
 #   5. StudyStat     — daily study statistics per user
 # ============================================================
 
-from datetime import datetime
+from datetime import datetime, timezone
 
 from sqlalchemy import (
     Boolean,
@@ -61,7 +61,7 @@ class User(Base):
     password_hash = Column(String(128), nullable=False)
 
     # Account creation timestamp.
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
 
     # Soft-delete flag — False means the account is active.
     is_active = Column(Boolean, default=True, nullable=False)
@@ -125,7 +125,7 @@ class Upload(Base):
     is_processed = Column(Boolean, default=False, nullable=False)
 
     # Timestamp of upload.
-    uploaded_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    uploaded_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
 
     # ----------------------------------------------------------
     # Relationships
@@ -180,7 +180,7 @@ class Summary(Base):
     tokens_used = Column(Integer, default=0)
 
     # Generation timestamp.
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
 
     # ----------------------------------------------------------
     # Relationships
@@ -254,7 +254,7 @@ class Flashcard(Base):
     is_starred = Column(Boolean, default=False, nullable=False)
 
     # Creation timestamp.
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
 
     # ----------------------------------------------------------
     # Relationships
