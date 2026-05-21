@@ -43,11 +43,11 @@ bcrypt==4.1.3
 # 4. AI INTEGRATION
 # ------------------------------------------------------------
 
-openai==1.30.1
-# Official OpenAI Python SDK.
-# Used for: GPT-4o chat completions (summaries, flashcards,
+google-generativeai==0.7.2
+# Official Google Gemini Python SDK.
+# Used for: Gemini chat completions (summaries, flashcards,
 # key concepts extraction).
-# Reads API key from environment variable OPENAI_API_KEY.
+# Reads API key from environment variable GEMINI_API_KEY.
 
 
 # ------------------------------------------------------------
@@ -87,10 +87,7 @@ pandas==2.2.2
 # Used for tabular data display in the dashboard
 # (study statistics, upload history tables).
 
-tiktoken==0.7.0
-# OpenAI's tokenizer — used to count tokens before sending
 # text to the API, ensuring chunks stay within model limits
-# (e.g. GPT-4o supports 128k context, but we chunk for cost).
 
 
 # ------------------------------------------------------------

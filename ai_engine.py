@@ -1,9 +1,9 @@
 # ============================================================
 # ai_engine.py
-# OpenAI API integration for the Student Productivity App.
+# Google Gemini API integration for the Student Productivity App.
 #
 # Responsibilities:
-#   1. Load the OpenAI API key from environment / st.secrets
+#   1. Load the Gemini API key from environment / st.secrets
 #   2. Generate a summary for an uploaded document
 #   3. Extract key concepts from document text
 #   4. Generate flashcard question-answer pairs
@@ -25,7 +25,7 @@ import json
 import time
 
 import streamlit as st
-from openai import OpenAI
+import google.generativeai as genai
 
 from database import get_db
 from models import Upload, Summary, Flashcard
@@ -36,46 +36,47 @@ from pdf_parser import chunk_text
 # SECTION 1 — CLIENT SETUP
 # ============================================================
 
-def get_openai_client() -> OpenAI:
+def get_gemini_api_key() -> str:
     """
-    Returns an authenticated OpenAI client.
+    Returns the Gemini API key.
 
-    Looks for the API key in this order:
-      1. st.secrets["OPENAI_API_KEY"]  — Streamlit Cloud deployment
-      2. os.environ["OPENAI_API_KEY"]  — local .env loaded by dotenv
+    Looks for the key in this order:
+      1. st.secrets["GEMINI_API_KEY"]  — Streamlit Cloud deployment
+      2. os.environ["GEMINI_API_KEY"]  — local .env loaded by dotenv
       3. Raises a clear error if neither is found
 
-    Call this inside every function that needs the API so the
-    client is always fresh and the key is always validated.
+    Get a free key at: https://aistudio.google.com/app/apikey
     """
     api_key = None
 
     # ── Try Streamlit secrets first (works on Streamlit Cloud) ─
     try:
-        api_key = st.secrets["OPENAI_API_KEY"]
+        api_key = st.secrets["GEMINI_API_KEY"]
     except Exception:
         pass
 
     # ── Fall back to environment variable ──────────────────
     if not api_key:
-        api_key = os.environ.get("OPENAI_API_KEY")
+        api_key = os.environ.get("GEMINI_API_KEY")
 
     if not api_key:
         raise ValueError(
-            "OpenAI API key not found. "
-            "Set OPENAI_API_KEY in your .env file or Streamlit secrets."
+            "Gemini API key not found. "
+            "Set GEMINI_API_KEY in your .env file or Streamlit secrets.\n"
+            "Get a free key at: https://aistudio.google.com/app/apikey"
         )
 
-    return OpenAI(api_key=api_key)
+    return api_key
 
 
 # Model to use for all completions.
-# gpt-4o is fast, cheap, and handles long documents well.
-DEFAULT_MODEL    = "gpt-4o"
-MAX_RETRIES      = 3       # Retry on transient API errors
-RETRY_DELAY      = 2       # Seconds between retries
-MAX_SUMMARY_CHUNKS   = 10  # Cap chunks sent for summarisation
-MAX_FLASHCARD_CHUNKS = 5   # Cap chunks sent for flashcard generation
+# gemini-1.5-flash is fast, cheap, and handles long documents well.
+# Swap for "gemini-1.5-pro" for higher quality at higher cost.
+DEFAULT_MODEL        = "gemini-2.5-flash-lite"
+MAX_RETRIES          = 3    # Retry on transient API errors
+RETRY_DELAY          = 2    # Seconds between retries
+MAX_SUMMARY_CHUNKS   = 10   # Cap chunks sent for summarisation
+MAX_FLASHCARD_CHUNKS = 5    # Cap chunks sent for flashcard generation
 
 
 # ============================================================
@@ -85,17 +86,20 @@ MAX_FLASHCARD_CHUNKS = 5   # Cap chunks sent for flashcard generation
 def call_openai(
     system_prompt: str,
     user_prompt:   str,
-    model:         str = DEFAULT_MODEL,
-    max_tokens:    int = 1500,
+    model:         str   = DEFAULT_MODEL,
+    max_tokens:    int   = 1500,
     temperature:   float = 0.4,
 ) -> tuple[bool, str, int]:
     """
-    Makes a single ChatCompletion API call with retry logic.
+    Makes a single Gemini API call with retry logic.
+
+    The function is intentionally still named call_openai so that
+    no other module needs to change — it is a drop-in replacement.
 
     Args:
         system_prompt: Instructions telling the AI what role to play.
         user_prompt:   The actual content / question to process.
-        model:         OpenAI model name.
+        model:         Gemini model name (default: gemini-1.5-flash).
         max_tokens:    Maximum tokens in the response.
         temperature:   0 = deterministic, 1 = creative. 0.4 is a
                        good balance for factual study content.
@@ -104,34 +108,51 @@ def call_openai(
         (True,  response_text, tokens_used)  on success
         (False, error_message, 0)            on failure
     """
-    client = get_openai_client()
+    api_key = get_gemini_api_key()
+
+    # Configure the SDK with the API key.
+    genai.configure(api_key=api_key)
+
+    # Gemini combines system + user prompt as a single message.
+    # We prefix the system instructions to the user content.
+    full_prompt = f"{system_prompt}\n\n{user_prompt}"
+
+    gemini_model = genai.GenerativeModel(
+        model_name  = model,
+        generation_config = genai.GenerationConfig(
+            max_output_tokens = max_tokens,
+            temperature       = temperature,
+        ),
+    )
 
     for attempt in range(1, MAX_RETRIES + 1):
         try:
-            response = client.chat.completions.create(
-                model    = model,
-                messages = [
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user",   "content": user_prompt},
-                ],
-                max_tokens  = max_tokens,
-                temperature = temperature,
-            )
+            response = gemini_model.generate_content(full_prompt)
 
-            text         = response.choices[0].message.content.strip()
-            tokens_used  = response.usage.total_tokens
+            text = response.text.strip()
+
+            # Gemini returns token counts in usage_metadata.
+            tokens_used = 0
+            if hasattr(response, "usage_metadata") and response.usage_metadata:
+                tokens_used = (
+                    getattr(response.usage_metadata, "total_token_count", 0) or 0
+                )
+
             return True, text, tokens_used
 
         except Exception as e:
             error_str = str(e)
 
-            # Don't retry on authentication errors — they won't resolve.
-            if "401" in error_str or "invalid_api_key" in error_str:
-                return False, "Invalid OpenAI API key. Check your .env file.", 0
+            # Don't retry on authentication errors.
+            if "API_KEY_INVALID" in error_str or "403" in error_str:
+                return False, "Invalid Gemini API key. Check your .env file.", 0
 
-            # Don't retry on quota/billing errors.
-            if "429" in error_str and "quota" in error_str.lower():
-                return False, "OpenAI quota exceeded. Check your billing.", 0
+            # Don't retry on quota errors.
+            if "429" in error_str or "quota" in error_str.lower():
+                return False, (
+                    "Gemini quota exceeded. Check your usage at "
+                    "https://aistudio.google.com/app/apikey"
+                ), 0
 
             if attempt < MAX_RETRIES:
                 time.sleep(RETRY_DELAY * attempt)  # Exponential back-off
