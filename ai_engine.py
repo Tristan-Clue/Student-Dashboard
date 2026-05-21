@@ -260,9 +260,6 @@ def generate_summary(
         db.add(summary_record)
         db.commit()
         db.refresh(summary_record)
-        # expunge() detaches the object from the session while keeping
-        # all its loaded data accessible after db.close().
-        db.expunge(summary_record)
         return True, "Summary generated successfully.", summary_record
 
     except Exception as e:
@@ -474,11 +471,8 @@ def generate_flashcards(
 
         db.commit()
 
-        # Refresh then expunge each card so attributes remain
-        # accessible after the session closes.
         for card in saved_cards:
             db.refresh(card)
-            db.expunge(card)
 
         message = f"{len(saved_cards)} flashcards generated successfully."
         return True, message, saved_cards
@@ -560,7 +554,6 @@ def process_document(
             summary = db.merge(summary)
             summary.key_concepts = "|".join(concepts)
             db.commit()
-            db.expunge(summary)
 
         results["summary"] = summary
 
