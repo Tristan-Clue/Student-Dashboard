@@ -389,3 +389,49 @@ def render_logout_button():
     if st.sidebar.button("Log out", use_container_width=True):
         logout_user()
         st.rerun()
+
+
+# ============================================================
+# SECTION 7 — CONVENIENCE ALIASES FOR APP.PY
+# ============================================================
+
+def show_login_form():
+    """Alias for render_login_form() for consistency with app.py naming."""
+    render_login_form()
+
+
+def show_registration_form():
+    """Alias for render_register_form() for consistency with app.py naming."""
+    render_register_form()
+
+
+def show_logout_button():
+    """Logout handler — clears session and reruns the app."""
+    logout_user()
+
+
+def get_current_user() -> dict | None:
+    """
+    Returns a dict with current user info, or None if not logged in.
+
+    Returns:
+        {
+            "user_id": int,
+            "username": str,
+            "authenticated": bool,
+        }
+        or None if not logged in.
+
+    Usage:
+        current_user = get_current_user()
+        if current_user:
+            st.write(f"Welcome, {current_user['username']}!")
+    """
+    if not is_logged_in():
+        return None
+
+    return {
+        "user_id": get_current_user_id(),
+        "username": get_current_username(),
+        "authenticated": True,
+    }
