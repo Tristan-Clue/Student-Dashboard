@@ -22,7 +22,7 @@ This ensures your `GEMINI_API_KEY` is loaded from `.env` before any AI calls are
 
 ### 4. **.env** — Updated variable name
 - Changed from: `OPENAI_API_KEY=...`
-- Changed to: `GEMINI_API_KEY=AIzaSyD20JuwH3M1tQi3ngignHWXlLxyjK-eBrw`
+- Changed to: `GEMINI_API_KEY=`
 
 ### 5. **.env.example** — Updated template
 - Now shows correct Gemini setup for future users
