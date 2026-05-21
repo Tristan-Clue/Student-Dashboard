@@ -1,0 +1,130 @@
+# ============================================================
+# requirements.txt
+# Student Productivity App — Python Dependencies
+# ============================================================
+# Install with:  pip install -r requirements.txt
+# Python version: 3.11+
+# ============================================================
+
+
+# ------------------------------------------------------------
+# 1. FRONTEND / UI
+# ------------------------------------------------------------
+
+streamlit==1.35.0
+# Core framework — renders the entire web UI.
+# Handles routing, session state, file uploads, and widgets.
+
+
+# ------------------------------------------------------------
+# 2. DATABASE — ORM & SQLite driver
+# ------------------------------------------------------------
+
+sqlalchemy==2.0.30
+# SQLAlchemy ORM: defines Python classes as database tables.
+# Handles all SQL queries without writing raw SQL.
+# SQLite driver is included in Python's standard library —
+# no extra install needed for local development.
+
+
+# ------------------------------------------------------------
+# 3. AUTHENTICATION & SECURITY
+# ------------------------------------------------------------
+
+bcrypt==4.1.3
+# Industry-standard password hashing library.
+# Automatically salts passwords and is intentionally slow
+# to resist brute-force attacks.
+
+# Note: DO NOT store plain-text passwords. Ever.
+
+
+# ------------------------------------------------------------
+# 4. AI INTEGRATION
+# ------------------------------------------------------------
+
+openai==1.30.1
+# Official OpenAI Python SDK.
+# Used for: GPT-4o chat completions (summaries, flashcards,
+# key concepts extraction).
+# Reads API key from environment variable OPENAI_API_KEY.
+
+
+# ------------------------------------------------------------
+# 5. DOCUMENT PROCESSING
+# ------------------------------------------------------------
+
+pdfplumber==0.11.0
+# Primary PDF parser. More accurate than PyPDF2 for
+# multi-column layouts, tables, and complex PDFs.
+# Handles multi-page documents cleanly.
+
+pypdf==4.2.0
+# Fallback PDF parser — used when pdfplumber fails.
+# Lighter weight, good for simple text-only PDFs.
+
+python-docx==1.1.2
+# Optional DOCX support.
+# Allows users to upload Microsoft Word documents
+# and extract their text content.
+
+
+# ------------------------------------------------------------
+# 6. ENVIRONMENT & CONFIGURATION
+# ------------------------------------------------------------
+
+python-dotenv==1.0.1
+# Loads environment variables from a .env file during
+# local development. In production (Streamlit Cloud),
+# secrets are loaded via st.secrets instead.
+
+
+# ------------------------------------------------------------
+# 7. DATA HANDLING & UTILITIES
+# ------------------------------------------------------------
+
+pandas==2.2.2
+# Used for tabular data display in the dashboard
+# (study statistics, upload history tables).
+
+tiktoken==0.7.0
+# OpenAI's tokenizer — used to count tokens before sending
+# text to the API, ensuring chunks stay within model limits
+# (e.g. GPT-4o supports 128k context, but we chunk for cost).
+
+
+# ------------------------------------------------------------
+# 8. DATE & TIME
+# ------------------------------------------------------------
+
+# Note: datetime is part of Python's standard library.
+# No extra install needed.
+
+
+# ------------------------------------------------------------
+# OPTIONAL / FUTURE
+# ------------------------------------------------------------
+
+# Uncomment if you add these features later:
+
+# plotly==5.22.0
+# Rich interactive charts for the study statistics dashboard.
+
+# streamlit-extras==0.4.3
+# Extra Streamlit widgets (e.g. card components, metric tiles).
+
+# Pillow==10.3.0
+# Image processing — useful if you add screenshot uploads.
+
+
+# ============================================================
+# QUICK REFERENCE — Key version compatibility notes:
+#
+#   streamlit 1.35 requires Python >= 3.8
+#   sqlalchemy 2.x has breaking changes vs 1.x — use 2.x only
+#   openai 1.x has breaking changes vs 0.x — use 1.x only
+#   pdfplumber 0.11 requires pdfminer.six (auto-installed)
+#
+# All packages above are compatible with each other on
+# Python 3.11 as of June 2024.
+# ============================================================
