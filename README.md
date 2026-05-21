@@ -28,7 +28,7 @@ student_productivity_app/
 ├── auth.py                 # Registration, login, password hashing
 ├── database.py             # SQLAlchemy engine and session setup
 ├── models.py               # ORM table definitions
-├── ai_engine.py            # OpenAI API integration
+├── ai_engine.py            # GEMINI API integration
 ├── pdf_parser.py           # Document upload and text extraction
 ├── flashcards.py           # Flashcard logic and spaced repetition
 ├── dashboard.py            # Dashboard page
@@ -89,12 +89,12 @@ pip install -r requirements.txt
 Open the `.env` file and replace the placeholder with your real key:
 
 ```
-OPENAI_API_KEY=sk-your-real-key-here
+GEMINI_API_KEY=sk-your-real-key-here
 ```
 
-Get a key at: https://platform.openai.com/api-keys
+Get a key at: https://aistudio.google.com/prompts/new_chat
 
-> **Note:** You need a paid OpenAI account with API access.
+> **Note:** You need a paid Gemini account with API access.
 > New accounts get free credits to start with.
 
 ### 5. Run the app
@@ -169,7 +169,7 @@ Go to https://streamlit.io/cloud and sign in with GitHub.
 - Paste the following (with your real key):
 
 ```toml
-OPENAI_API_KEY = "sk-your-real-key-here"
+GEMINI_API_KEY = "sk-your-real-key-here"
 ```
 
 - Click **Save** — the app will restart automatically
@@ -189,7 +189,7 @@ OPENAI_API_KEY = "sk-your-real-key-here"
 | Frontend    | Streamlit 1.35                    |
 | Backend     | Python 3.11+                      |
 | Database    | SQLite via SQLAlchemy 2.0 ORM     |
-| AI          | OpenAI GPT-4o API                 |
+| AI          | Gemini 2.5 Lite Flash             |
 | PDF parsing | pdfplumber + pypdf (fallback)     |
 | Auth        | bcrypt password hashing           |
 | Config      | python-dotenv + st.secrets        |
@@ -223,8 +223,8 @@ OPENAI_API_KEY = "sk-your-real-key-here"
 **`ModuleNotFoundError: No module named 'pdfplumber'`**
 → Run `pip install -r requirements.txt` inside your virtual environment.
 
-**`ValueError: OpenAI API key not found`**
-→ Check your `.env` file has `OPENAI_API_KEY=sk-...` with no spaces around `=`.
+**`ValueError: GEMINI API key not found`**
+→ Check your `.env` file has `GEMINI_API_KEY=sk-...` with no spaces around `=`.
 
 **`streamlit: command not found`**
 → Make sure your virtual environment is activated: `source venv/bin/activate`
@@ -241,6 +241,6 @@ See the deployment note above about switching to PostgreSQL.
 
 ## 🙏 Acknowledgements
 
-Built with [Streamlit](https://streamlit.io), [OpenAI](https://openai.com),
+Built with [Streamlit](https://streamlit.io), [GEMINI](https://gemini.google.com/app),
 [SQLAlchemy](https://sqlalchemy.org), [pdfplumber](https://github.com/jsvine/pdfplumber),
 and [bcrypt](https://pypi.org/project/bcrypt/).
