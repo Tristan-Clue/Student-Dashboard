@@ -72,7 +72,7 @@ def get_gemini_api_key() -> str:
 # Model to use for all completions.
 # gemini-1.5-flash is fast, cheap, and handles long documents well.
 # Swap for "gemini-1.5-pro" for higher quality at higher cost.
-DEFAULT_MODEL        = "gemini-2.5-flash-lite"
+DEFAULT_MODEL        = "gemini-1.5-flash"
 MAX_RETRIES          = 3    # Retry on transient API errors
 RETRY_DELAY          = 2    # Seconds between retries
 MAX_SUMMARY_CHUNKS   = 10   # Cap chunks sent for summarisation
@@ -607,11 +607,20 @@ def process_document(
 # ============================================================
 
 def get_summaries_for_user(user_id: int) -> list[Summary]:
-    """Returns all summaries for a user, newest first."""
+    """
+    Returns all summaries for a user, newest first.
+
+    Uses joinedload to eagerly fetch the related Upload row in
+    the same SQL query so summary.upload.filename is accessible
+    after the session closes (avoids DetachedInstanceError).
+    """
+    from sqlalchemy.orm import joinedload
+
     db = get_db()
     try:
         return (
             db.query(Summary)
+            .options(joinedload(Summary.upload))
             .filter(Summary.user_id == user_id)
             .order_by(Summary.created_at.desc())
             .all()
@@ -621,11 +630,19 @@ def get_summaries_for_user(user_id: int) -> list[Summary]:
 
 
 def get_summary_for_upload(upload_id: int, user_id: int) -> Summary | None:
-    """Returns the most recent summary for a specific upload."""
+    """
+    Returns the most recent summary for a specific upload.
+
+    Uses joinedload so summary.upload is populated before
+    the session closes (avoids DetachedInstanceError).
+    """
+    from sqlalchemy.orm import joinedload
+
     db = get_db()
     try:
         return (
             db.query(Summary)
+            .options(joinedload(Summary.upload))
             .filter(
                 Summary.upload_id == upload_id,
                 Summary.user_id   == user_id,
