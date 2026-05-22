@@ -72,7 +72,7 @@ def get_gemini_api_key() -> str:
 # Model to use for all completions.
 # gemini-1.5-flash is fast, cheap, and handles long documents well.
 # Swap for "gemini-1.5-pro" for higher quality at higher cost.
-DEFAULT_MODEL        = "gemini-1.5-flash"
+DEFAULT_MODEL        = "gemini-2.5-flash-lite"
 MAX_RETRIES          = 3    # Retry on transient API errors
 RETRY_DELAY          = 2    # Seconds between retries
 MAX_SUMMARY_CHUNKS   = 10   # Cap chunks sent for summarisation
