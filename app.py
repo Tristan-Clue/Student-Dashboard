@@ -125,19 +125,19 @@ def route_to_page(page: str):
         dashboard.render()
 
     elif page == "upload":
-        from pages import upload
+        from page_modules import upload
         upload.render()
 
     elif page == "flashcards":
-        from pages import flashcard_review
+        from page_modules import flashcard_review
         flashcard_review.render()
 
     elif page == "summaries":
-        from pages import summaries
+        from page_modules import summaries
         summaries.render()
 
     elif page == "settings":
-        from pages import settings
+        from page_modules import settings
         settings.render()
 
 
